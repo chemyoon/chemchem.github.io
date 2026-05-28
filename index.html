@@ -2,74 +2,118 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>AI 과학 퀴즈 챗봇</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ 실전! 물질의 상태변화 AI 퀴즈</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 600px; margin: 5px auto; padding: 20px; }
-        .quiz-container { background-color: #f3f4f6; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
-        .chat-box { border: 1px solid #ccc; padding: 15px; height: 200px; overflow-y: auto; background-color: #fff; margin-bottom: 10px; border-radius: 5px; }
-        .input-group { display: flex; }
-        input[type="text"] { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px 0 0 5px; }
-        button { padding: 10px 20px; border: none; background-color: #4CAF50; color: white; cursor: pointer; border-radius: 0 5px 5px 0; }
-        button:hover { background-color: #45a049; }
-        .user-msg { color: #333; margin-bottom: 8px; }
-        .ai-msg { color: #0066cc; font-weight: bold; margin-bottom: 15px; background-color: #e6f2ff; padding: 10px; border-radius: 5px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .chat-wrapper { width: 100%; max-width: 550px; background: #fff; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; height: 85vh; }
+        .header { background: #4a6fa5; color: white; padding: 20px; text-align: center; font-size: 1.2rem; font-weight: bold; }
+        .chat-box { flex: 1; padding: 20px; overflow-y: auto; background: #f8f9fa; display: flex; flex-direction: column; gap: 15px; }
+        .msg { max-width: 85%; padding: 12px 16px; border-radius: 10px; line-height: 1.5; font-size: 0.95rem; white-space: pre-wrap; }
+        .ai-msg { background: #eef2f7; color: #333; align-self: flex-start; border-left: 5px solid #4a6fa5; }
+        .user-msg { background: #4a6fa5; color: white; align-self: flex-end; }
+        .system-end-msg { background: #fff3cd; color: #856404; align-self: center; text-align: center; font-weight: bold; border: 1px solid #ffeeba; width: 90%; }
+        .input-area { display: flex; padding: 15px; background: #fff; border-top: 1px solid #ddd; gap: 10px; }
+        input[type="text"] { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 0.95rem; outline: none; }
+        input[type="text"]:disabled { background: #e9ecef; cursor: not-allowed; }
+        button { padding: 12px 24px; border: none; background: #4a6fa5; color: white; border-radius: 8px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        button:hover { background: #3b5c88; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
     </style>
 </head>
 <body>
 
-    <h2>🔬 AI 과학 퀴즈방</h2>
-    
-    <div class="quiz-container">
-        <h3>문제: "열팽창"을 설명하시오.</h3>
-        <p style="color: #666; font-size: 14px;">(힌트: 온도가 올라가면 물질의 무엇이 변할까요?)</p>
-    </div>
+    <div class="chat-wrapper">
+        <div class="header">🔬 물질의 상태변화 AI 퀴즈 (총 3문제)</div>
+        
+        <div class="chat-box" id="chatBox"></div>
 
-    <div class="chat-box" id="chatBox">
-        <div class="ai-msg">AI: 안녕하세요! 위 문제에 대한 여러분의 생각을 아래 채팅창에 자유롭게 적어주세요. 제가 평가해 드릴게요!</div>
-    </div>
-
-    <div class="input-group">
-        <input type="text" id="userReply" placeholder="여기에 답변을 입력하세요..." onkeypress="if(event.keyCode==13) sendAnswer()">
-        <button onclick="sendAnswer()">전송</button>
+        <div class="input-area">
+            <input type="text" id="userReply" placeholder="정답을 입력하세요... (예: 기화)" onkeypress="if(event.keyCode==13) sendAnswer()">
+            <button id="sendBtn" onclick="sendAnswer()">전송</button>
+        </div>
     </div>
 
     <script>
+        // ==========================================
+        // 🔗 [주소 스위칭 설정변수]
+        // 로컬 테스트 시 1번 주소 사용 / Render 배포 시 2번 주소 주석 해제 후 사용
+        // ==========================================
+        const BACKEND_URL = 'http://127.0.0.1:5000'; 
+        // const BACKEND_URL = 'https://내-render-서비스-이름.onrender.com';
+
+        let questionNumber = 0; // 진행 중인 문제 번호 카운트
+        let currentQuizText = ""; // AI가 낸 현재 문제를 보관하는 변수
+
+        const chatBox = document.getElementById('chatBox');
+        const inputField = document.getElementById('userReply');
+        const sendBtn = document.getElementById('sendBtn');
+
+        // 페이지 켜지자마자 실행: AI가 첫 인사와 1번 문제를 내도록 호출
+        window.onload = function() {
+            fetchQuizData("", 0, "");
+        };
+
+        // 메시지를 화면에 추가하는 함수
+        defAppendMessage(text, senderClass) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `msg ${senderClass}`;
+            msgDiv.innerHTML = text;
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight; // 스크롤 자동 하단 이동
+            return msgDiv;
+        }
+
+        // 사용자가 답변을 전송할 때 실행되는 함수
         function sendAnswer() {
-            const inputField = document.getElementById('userReply');
             const userAnswer = inputField.value.trim();
-            
-            if (userAnswer === "") return; // 빈 칸이면 전송 안 함
+            if (userAnswer === "" || questionNumber > 3) return;
 
-            const chatBox = document.getElementById('chatBox');
+            // 1. 화면에 사용자 답변 추가
+            defAppendMessage(userAnswer, 'user-msg');
+            inputField.value = ""; // 입력창 비우기
 
-            // 1. 내가 쓴 답변을 채팅창에 추가
-            chatBox.innerHTML += `<div class="user-msg">▶ 나: ${userAnswer}</div>`;
-            chatBox.innerHTML += `<div class="ai-msg" id="loading">AI: 답변을 분석하고 있습니다. 잠시만 기다려주세요...</div>`;
-            
-            // 입력창 비우기 및 스크롤 아래로 내리기
-            inputField.value = "";
-            chatBox.scrollTop = chatBox.scrollHeight;
+            // 로딩 안내 메시지
+            const loadingMsg = defAppendMessage("🤖 AI 선생님이 채점 및 다음 문제를 생성하고 있습니다...", 'ai-msg');
 
-            // 2. 파이썬 백엔드 서버로 내가 쓴 답변 전송하기 (API POST 요청)
-            fetch('http://127.0.0.1:5000/api/check-answer', {
+            // 문제 카운트 올리기
+            questionNumber++;
+
+            // 2. 백엔드 서버에 데이터 전송
+            fetchQuizData(userAnswer, questionNumber, currentQuizText, loadingMsg);
+        }
+
+        // 백엔드 Flask 서버와 통신하는 핵심 fetch 함수
+        function fetchQuizData(reply, qNum, cQuiz, loadingMsgElement = null) {
+            fetch(`${BACKEND_URL}/api/quiz`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ reply: userAnswer }) // 파이썬에게 { "reply": "내 답변 내용" } 양식으로 보냄
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    reply: reply,
+                    question_number: qNum,
+                    current_quiz: cQuiz
+                })
             })
             .then(response => response.json())
             .then(data => {
-                // 로딩 메시지 제거
-                document.getElementById('loading').remove();
-                
-                // 3. 파이썬이 돌려준 AI 피드백을 채팅창에 추가
-                chatBox.innerHTML += `<div class="ai-msg">AI 피드백: ${data.feedback}</div>`;
-                chatBox.scrollTop = chatBox.scrollHeight;
+                // 로딩 메시지가 있으면 제거
+                if (loadingMsgElement) loadingMsgElement.remove();
+
+                // 3. AI 답변을 화면에 추가하고 변수에 현재 퀴즈 내용 저장
+                const aiResponse = data.ai_response;
+                defAppendMessage(aiResponse, 'ai-msg');
+                currentQuizText = aiResponse;
+
+                // 4. [종료 조건 처리] 3문제를 모두 풀었을 경우 UI 차단
+                if (qNum === 3) {
+                    defAppendMessage("🔒 3문제 퀴즈가 종료되었습니다. 더 이상 입력할 수 없습니다.", 'system-end-msg');
+                    inputField.disabled = true;
+                    sendBtn.disabled = true;
+                }
             })
             .catch(error => {
-                console.error('에러:', error);
-                document.getElementById('loading').innerHTML = "AI: 서버 연결에 실패했습니다. 파이썬 서버가 켜져 있는지 확인하세요!";
+                console.error('Error:', error);
+                if (loadingMsgElement) loadingMsgElement.innerHTML = "⚠️ 서버와 연결할 수 없습니다. 배포 주소나 파이썬 서버 상태를 확인하세요.";
             });
         }
     </script>
