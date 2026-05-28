@@ -69,7 +69,7 @@
             if (userAnswer === "" || questionNumber > 3) return;
 
             // 1. 화면에 사용자 답변 추가
-            defAppendMessage(userAnswer, 'user-msg');
+            appendMessage(userAnswer, 'user-msg');
             inputField.value = ""; // 입력창 비우기
 
             // 로딩 안내 메시지
@@ -100,12 +100,12 @@
 
                 // 3. AI 답변을 화면에 추가하고 변수에 현재 퀴즈 내용 저장
                 const aiResponse = data.ai_response;
-                defAppendMessage(aiResponse, 'ai-msg');
+                appendMessage(aiResponse, 'ai-msg');
                 currentQuizText = aiResponse;
 
                 // 4. [종료 조건 처리] 3문제를 모두 풀었을 경우 UI 차단
                 if (qNum === 3) {
-                    defAppendMessage("🔒 3문제 퀴즈가 종료되었습니다. 더 이상 입력할 수 없습니다.", 'system-end-msg');
+                    appendMessage("🔒 3문제 퀴즈가 종료되었습니다. 더 이상 입력할 수 없습니다.", 'system-end-msg');
                     inputField.disabled = true;
                     sendBtn.disabled = true;
                 }
