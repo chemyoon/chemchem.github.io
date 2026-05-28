@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>AI 과학 퀴즈 챗봇</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 5px auto; padding: 20px; }
+        .quiz-container { background-color: #f3f4f6; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+        .chat-box { border: 1px solid #ccc; padding: 15px; height: 200px; overflow-y: auto; background-color: #fff; margin-bottom: 10px; border-radius: 5px; }
+        .input-group { display: flex; }
+        input[type="text"] { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px 0 0 5px; }
+        button { padding: 10px 20px; border: none; background-color: #4CAF50; color: white; cursor: pointer; border-radius: 0 5px 5px 0; }
+        button:hover { background-color: #45a049; }
+        .user-msg { color: #333; margin-bottom: 8px; }
+        .ai-msg { color: #0066cc; font-weight: bold; margin-bottom: 15px; background-color: #e6f2ff; padding: 10px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+    <h2>🔬 AI 과학 퀴즈방</h2>
+    
+    <div class="quiz-container">
+        <h3>문제: "열팽창"을 설명하시오.</h3>
+        <p style="color: #666; font-size: 14px;">(힌트: 온도가 올라가면 물질의 무엇이 변할까요?)</p>
+    </div>
+
+    <div class="chat-box" id="chatBox">
+        <div class="ai-msg">AI: 안녕하세요! 위 문제에 대한 여러분의 생각을 아래 채팅창에 자유롭게 적어주세요. 제가 평가해 드릴게요!</div>
+    </div>
+
+    <div class="input-group">
+        <input type="text" id="userReply" placeholder="여기에 답변을 입력하세요..." onkeypress="if(event.keyCode==13) sendAnswer()">
+        <button onclick="sendAnswer()">전송</button>
+    </div>
+
+    <script>
+        function sendAnswer() {
+            const inputField = document.getElementById('userReply');
+            const userAnswer = inputField.value.trim();
+            
+            if (userAnswer === "") return; // 빈 칸이면 전송 안 함
+
+            const chatBox = document.getElementById('chatBox');
+
+            // 1. 내가 쓴 답변을 채팅창에 추가
+            chatBox.innerHTML += `<div class="user-msg">▶ 나: ${userAnswer}</div>`;
+            chatBox.innerHTML += `<div class="ai-msg" id="loading">AI: 답변을 분석하고 있습니다. 잠시만 기다려주세요...</div>`;
+            
+            // 입력창 비우기 및 스크롤 아래로 내리기
+            inputField.value = "";
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // 2. 파이썬 백엔드 서버로 내가 쓴 답변 전송하기 (API POST 요청)
+            fetch('http://127.0.0.1:5000/api/check-answer', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ reply: userAnswer }) // 파이썬에게 { "reply": "내 답변 내용" } 양식으로 보냄
+            })
+            .then(response => response.json())
+            .then(data => {
+                // 로딩 메시지 제거
+                document.getElementById('loading').remove();
+                
+                // 3. 파이썬이 돌려준 AI 피드백을 채팅창에 추가
+                chatBox.innerHTML += `<div class="ai-msg">AI 피드백: ${data.feedback}</div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            })
+            .catch(error => {
+                console.error('에러:', error);
+                document.getElementById('loading').innerHTML = "AI: 서버 연결에 실패했습니다. 파이썬 서버가 켜져 있는지 확인하세요!";
+            });
+        }
+    </script>
+</body>
+</html>
