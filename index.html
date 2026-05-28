@@ -54,7 +54,7 @@
         };
 
         // 메시지를 화면에 추가하는 함수
-        defAppendMessage(text, senderClass) {
+       function appendMessage(text, senderClass) {
             const msgDiv = document.createElement('div');
             msgDiv.className = `msg ${senderClass}`;
             msgDiv.innerHTML = text;
@@ -73,7 +73,7 @@
             inputField.value = ""; // 입력창 비우기
 
             // 로딩 안내 메시지
-            const loadingMsg = defAppendMessage("🤖 AI 선생님이 채점 및 다음 문제를 생성하고 있습니다...", 'ai-msg');
+            const loadingMsg = appendMessage("🤖 AI 선생님이 채점 및 다음 문제를 생성하고 있습니다...", 'ai-msg');
 
             // 문제 카운트 올리기
             questionNumber++;
