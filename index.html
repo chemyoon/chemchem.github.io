@@ -16,11 +16,12 @@
             height: 100vh;
             box-sizing: border-box;
         }
-        /* 💡 반응형 레이아웃의 핵심: 가로 폭을 유연하게 대폭 넓혔습니다. */
+        
+        /* [규칙 1 - 가독성 폭 제한 및 반응형]: 16:9 화면 최적화를 위한 900px 맥스폭 바인딩 */
         .chat-wrapper { 
             width: 100%; 
-            max-width: 900px; /* 기존 550px에서 900px로 넓혀 넓은 화면을 시원하게 활용합니다. */
-            min-width: 320px; /* 모바일 수준의 최소 폭 보장 */
+            max-width: 900px; 
+            min-width: 320px; 
             background: #fff; 
             border-radius: 15px; 
             box-shadow: 0 4px 20px rgba(0,0,0,0.1); 
@@ -29,56 +30,143 @@
             flex-direction: column; 
             height: 90vh; 
         }
-        .header { background: #2c3e50; color: white; padding: 20px; text-align: center; font-size: 1.3rem; font-weight: bold; }
-        .chat-box { flex: 1; padding: 25px; overflow-y: auto; background: #f8f9fa; display: flex; flex-direction: column; gap: 20px; }
         
-        /* 💡 가독성 극대화를 위한 메시지 창 수정 */
+        .header { 
+            background: #2c3e50; 
+            color: white; 
+            padding: 20px; 
+            text-align: center; 
+            font-size: 1.3rem; 
+            font-weight: bold; 
+            letter-spacing: -0.5px;
+        }
+        
+        .chat-box { 
+            flex: 1; 
+            padding: 25px; 
+            overflow-y: auto; 
+            background: #f8f9fa; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+        }
+        
+        /* [규칙 1 - 가독성]: 줄간격을 1.7로 늘려 가독성 극대화 */
         .msg { 
-            max-width: 85%; /* 화면의 85%까지 채울 수 있게 확장 */
+            max-width: 85%; 
             padding: 16px 20px; 
             border-radius: 12px; 
-            line-height: 1.7; /* 줄간격을 넓혀 가독성을 높였습니다. */
+            line-height: 1.7; 
             font-size: 1rem; 
             white-space: pre-wrap; 
             word-break: break-all;
         }
-        /* 💡 AI 답변창이 너무 가로로 펑퍼짐해지지 않도록 가독성 마지노선(줄당 45자 내외) 폭 설정 */
+        
+        /* [규칙 1 - AI 답변창 너비 최적화]: 본문 집중형 75% 맥스폭 제한 */
         .ai-msg { 
             background: #ffffff; 
             color: #333; 
             align-self: flex-start; 
             border-left: 5px solid #3498db;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            max-width: 75%; /* 큰 화면에서 한 눈에 읽기 가장 좋은 폭 */
+            max-width: 75%; 
         }
-        .user-msg { background: #3498db; color: white; align-self: flex-end; }
         
-        .input-area { display: flex; padding: 20px; background: #fff; border-top: 1px solid #ddd; gap: 12px; }
-        input[type="text"] { flex: 1; padding: 14px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; outline: none; }
-        button { padding: 14px 28px; border: none; background: #2c3e50; color: white; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; transition: background 0.2s; }
-        button:hover { background: #1a252f; }
+        .user-msg { 
+            background: #3498db; 
+            color: white; 
+            align-self: flex-end; 
+        }
+        
+        .system-end-msg {
+            background: #e74c3c;
+            color: white;
+            align-self: center;
+            text-align: center;
+            max-width: 90%;
+            font-weight: bold;
+            box-shadow: 0 2px 10px rgba(231, 76, 60, 0.3);
+        }
+        
+        .input-area { 
+            display: flex; 
+            padding: 20px; 
+            background: #fff; 
+            border-top: 1px solid #ddd; 
+            gap: 12px; 
+        }
+        
+        input[type="text"] { 
+            flex: 1; 
+            padding: 14px; 
+            border: 1px solid #ccc; 
+            border-radius: 8px; 
+            font-size: 1rem; 
+            outline: none; 
+            transition: border 0.2s;
+        }
+        
+        input[type="text"]:focus {
+            border-color: #3498db;
+        }
+        
+        button { 
+            padding: 14px 28px; 
+            border: none; 
+            background: #2c3e50; 
+            color: white; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            font-size: 1rem; 
+            transition: background 0.2s; 
+        }
+        
+        button:hover { 
+            background: #1a252f; 
+        }
+        
+        button:disabled, input:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            color: #7f8c8d;
+        }
     </style>
 </head>
 <body>
 
     <div class="chat-wrapper">
-        <div class="header">📜 과학사 탐색 및 글쓰기 도우미</div>
+        <div class="header">📜 과학사 탐색 및 글쓰기 도우미 (중1 맞춤형 3단계 빌드업)</div>
         <div class="chat-box" id="chatBox"></div>
         <div class="input-area">
-          <input type="text" id="userReply" placeholder="궁금한 과학사 주제를 입력하고 엔터를 누르세요..." onkeypress="if(event.keyCode==13) sendAnswer()">
-          <button id="sendBtn" onclick="sendAnswer()">전송</button>
+            <input type="text" id="userReply" placeholder="빈칸을 채워 질문을 완성하세요..." onkeypress="if(event.keyCode==13) sendAnswer()">
+            <button id="sendBtn" onclick="sendAnswer()">전송</button>
         </div>
     </div>
 
     <script>
-        const BACKEND_URL = 'https://science-quiz-backend.onrender.com'; // 내 Render 주소 확인!
+        // [규칙 1 - 중복 슬래시 해제 보장]: 백엔드 도메인 주소 등록
+        // 배포 주소 끝에 슬래시(/)가 있든 없든 하단 fetch 단계에서 엄격하게 정제합니다.
+        const BACKEND_URL = 'https://science-quiz-backend.onrender.com'; 
+        
         let questionNumber = 0; 
         let currentQuizText = ""; 
 
+        // 3단계 고정형 질문 템플릿 정의 세트
+        const templates = {
+            1: "나는 과학 개념 및 기술 중에서 _________가 세부적으로 어떻게 분류되는지 알고 싶어",
+            2: "나는 과학 개념 및 기술 중에서 ________의 시작과 발전사를 알고 싶어",
+            3: "나는 과학 개념 및 기술 중에서 _______의 앞으로의 전망 혹은 활용에 대해 알고 싶어"
+        };
+
         const chatBox = document.getElementById('chatBox');
         const inputField = document.getElementById('userReply');
+        const sendBtn = document.getElementById('sendBtn');
 
+        // 페이지 최초 로드 시 실행 (0단계 상태 트리거)
         window.onload = function() {
+            // [작동 흐름 명세 1]: 최초 로드 시 1단계 고정형 템플릿 입력창 자동 로드
+            inputField.value = templates[1];
             fetchQuizData("", 0, "");
         };
 
@@ -93,21 +181,40 @@
 
         function sendAnswer() {
             const userAnswer = inputField.value.trim();
-            if (userAnswer === "") return;
+            // 연타 및 빈 문자열 전송 원천 방지
+            if (userAnswer === "" || questionNumber >= 3) return;
 
+            // 학생이 보낸 메시지 화면 출력
             appendMessage(userAnswer, 'user-msg');
-            inputField.value = ""; 
-
-            const loadingMsg = appendMessage("🤖 AI 선생님이 구글 검색으로 최신 자료를 수집 중입니다...", 'ai-msg');
+            
+            // 질문 단계 카운트 카운트 업 (1단계 -> 2단계 -> 3단계)
             questionNumber++; 
+            
+            // 전송 완료 직후 입력창 텍스트 초기화 대신 [다음 단계 템플릿]을 즉각 자동 교체 배치
+            if (questionNumber === 1) {
+                inputField.value = templates[2];
+            } else if (questionNumber === 2) {
+                inputField.value = templates[3];
+            } else {
+                inputField.value = "모든 질문 수집이 완료되었습니다.";
+            }
 
+            // 구글 실시간 검색 가동 대기 안내
+            const loadingMsg = appendMessage("🤖 AI 선생님이 구글 검색으로 최신 자료를 수집 중입니다...", 'ai-msg');
+
+            // API 연동 전송 실행
             fetchQuizData(userAnswer, questionNumber, currentQuizText, loadingMsg);
         }
 
         function fetchQuizData(reply, qNum, cQuiz, loadingMsgElement = null) {
-            fetch(`${BACKEND_URL}/api/quiz`, {
+            // [규칙 1 - 중복 슬래시 방지 안전 메커니즘 적용]
+            const cleanBaseUrl = BACKEND_URL.replace(/\/+$/, "");
+            const targetUrl = `${cleanBaseUrl}/api/quiz`;
+
+            fetch(targetUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                // [규칙 2]: 소문자 스네이크 케이스 규격 완전 동기화 및 명시적 인자 전송
                 body: JSON.stringify({
                     reply: String(reply),
                     question_number: Number(qNum),
@@ -119,15 +226,27 @@
                 return response.json();
             })
             .then(data => {
+                // 로딩 메시지 제거
                 if (loadingMsgElement) loadingMsgElement.remove();
+                
                 const aiResponse = data.ai_response;
                 appendMessage(aiResponse, 'ai-msg');
+                
+                // 대화 컨텍스트 유지용 변수 셋팅
                 currentQuizText = aiResponse;
+
+                // [작동 흐름 명세 4]: 3단계 최종 답변 수신 완료 시 물리적 입력 완전 봉쇄
+                if (qNum === 3) {
+                    appendMessage("🎉 3단계 자료 수집이 모두 완료되었습니다! 수집된 자료를 바탕으로 멋진 과학사 보고서를 작성해 보세요.", 'system-end-msg');
+                    inputField.disabled = true;
+                    sendBtn.disabled = true;
+                    inputField.value = "🔒 수행평가 자료 수집이 완전히 종료되었습니다.";
+                }
             })
             .catch(error => {
                 console.error('Error:', error);
                 if (loadingMsgElement) {
-                    loadingMsgElement.innerHTML = `⚠️ 오류가 발생했습니다. 잠시 후 다시 시도해 주세요. (사유: {error.message})`;
+                    loadingMsgElement.innerHTML = `⚠️ 오류가 발생했습니다. 전송 창을 확인하거나 새로고침 후 다시 실행해 보세요. (사유: ${error.message})`;
                 }
             });
         }
