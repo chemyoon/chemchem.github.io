@@ -29,61 +29,50 @@
         <div class="chat-box" id="chatBox"></div>
 
         <div class="input-area">
-          <input type="text" id="userReply" placeholder="..." onkeypress="if(event.keyCode==13) sendAnswer()">
+          <input type="text" id="userReply" placeholder="답변을 입력하고 엔터나 전송을 누르세요..." onkeypress="if(event.keyCode==13) sendAnswer()">
           <button id="sendBtn" onclick="sendAnswer()">전송</button>
         </div>
     </div>
 
     <script>
-        // ==========================================
-        // 🔗 [주소 스위칭 설정변수]
-        // ==========================================
-  
-        const BACKEND_URL = 'https://science-quiz-backend.onrender.com/';
+        // ⭕ 주소 끝의 슬래시(/)를 제거하여 URL 가독성을 높였습니다.
+        const BACKEND_URL = 'https://science-quiz-backend.onrender.com';
 
-        let questionNumber = 0; // 진행 중인 문제 번호 카운트
-        let currentQuizText = ""; // AI가 낸 현재 문제를 보관하는 변수
+        let questionNumber = 0; 
+        let currentQuizText = ""; 
 
         const chatBox = document.getElementById('chatBox');
         const inputField = document.getElementById('userReply');
         const sendBtn = document.getElementById('sendBtn');
 
-        // 페이지 켜지자마자 실행: AI가 첫 인사와 1번 문제를 내도록 호출
         window.onload = function() {
             fetchQuizData("", 0, "");
         };
 
-        // 메시지를 화면에 추가하는 함수
        function appendMessage(text, senderClass) {
             const msgDiv = document.createElement('div');
             msgDiv.className = `msg ${senderClass}`;
             msgDiv.innerHTML = text;
             chatBox.appendChild(msgDiv);
-            chatBox.scrollTop = chatBox.scrollHeight; // 스크롤 자동 하단 이동
+            chatBox.scrollTop = chatBox.scrollHeight; 
             return msgDiv;
         }
 
-        // 사용자가 답변을 전송할 때 실행되는 함수
         function sendAnswer() {
             const userAnswer = inputField.value.trim();
             if (userAnswer === "" || questionNumber > 3) return;
 
-            // 1. 화면에 사용자 답변 추가
             appendMessage(userAnswer, 'user-msg');
-            inputField.value = ""; // 입력창 비우기
+            inputField.value = ""; 
 
-            // 로딩 안내 메시지
             const loadingMsg = appendMessage("🤖 AI 선생님이 채점 및 다음 문제를 생성하고 있습니다...", 'ai-msg');
-
-            // 문제 카운트 올리기
             questionNumber++;
 
-            // 2. 백엔드 서버에 데이터 전송
             fetchQuizData(userAnswer, questionNumber, currentQuizText, loadingMsg);
         }
 
-        // 백엔드 Flask 서버와 통신하는 핵심 fetch 함수
         function fetchQuizData(reply, qNum, cQuiz, loadingMsgElement = null) {
+            // ⭕ 주소 조립 라인 정상화 (/api/quiz)
             fetch(`${BACKEND_URL}/api/quiz`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -95,15 +84,12 @@
             })
             .then(response => response.json())
             .then(data => {
-                // 로딩 메시지가 있으면 제거
                 if (loadingMsgElement) loadingMsgElement.remove();
 
-                // 3. AI 답변을 화면에 추가하고 변수에 현재 퀴즈 내용 저장
                 const aiResponse = data.ai_response;
                 appendMessage(aiResponse, 'ai-msg');
                 currentQuizText = aiResponse;
 
-                // 4. [종료 조건 처리] 3문제를 모두 풀었을 경우 UI 차단
                 if (qNum === 3) {
                     appendMessage("🔒 3문제 퀴즈가 종료되었습니다. 더 이상 입력할 수 없습니다.", 'system-end-msg');
                     inputField.disabled = true;
