@@ -3,47 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚡ 실전! 물질의 상태변화 AI 퀴즈</title>
+    <title>🔍 과학사 탐색 AI 수행평가 도우미</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .chat-wrapper { width: 100%; max-width: 550px; background: #fff; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; height: 85vh; }
-        .header { background: #4a6fa5; color: white; padding: 20px; text-align: center; font-size: 1.2rem; font-weight: bold; }
-        .chat-box { flex: 1; padding: 20px; overflow-y: auto; background: #f8f9fa; display: flex; flex-direction: column; gap: 15px; }
-        .msg { max-width: 85%; padding: 12px 16px; border-radius: 10px; line-height: 1.5; font-size: 0.95rem; white-space: pre-wrap; }
-        .ai-msg { background: #eef2f7; color: #333; align-self: flex-start; border-left: 5px solid #4a6fa5; }
-        .user-msg { background: #4a6fa5; color: white; align-self: flex-end; }
-        .system-end-msg { background: #fff3cd; color: #856404; align-self: center; text-align: center; font-weight: bold; border: 1px solid #ffeeba; width: 90%; }
-        .input-area { display: flex; padding: 15px; background: #fff; border-top: 1px solid #ddd; gap: 10px; }
-        input[type="text"] { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 0.95rem; outline: none; }
-        input[type="text"]:disabled { background: #e9ecef; cursor: not-allowed; }
-        button { padding: 12px 24px; border: none; background: #4a6fa5; color: white; border-radius: 8px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
-        button:hover { background: #3b5c88; }
-        button:disabled { background: #ccc; cursor: not-allowed; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #f0f2f5; 
+            margin: 0; 
+            padding: 20px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+        /* 💡 반응형 레이아웃의 핵심: 가로 폭을 유연하게 대폭 넓혔습니다. */
+        .chat-wrapper { 
+            width: 100%; 
+            max-width: 900px; /* 기존 550px에서 900px로 넓혀 넓은 화면을 시원하게 활용합니다. */
+            min-width: 320px; /* 모바일 수준의 최소 폭 보장 */
+            background: #fff; 
+            border-radius: 15px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1); 
+            overflow: hidden; 
+            display: flex; 
+            flex-direction: column; 
+            height: 90vh; 
+        }
+        .header { background: #2c3e50; color: white; padding: 20px; text-align: center; font-size: 1.3rem; font-weight: bold; }
+        .chat-box { flex: 1; padding: 25px; overflow-y: auto; background: #f8f9fa; display: flex; flex-direction: column; gap: 20px; }
+        
+        /* 💡 가독성 극대화를 위한 메시지 창 수정 */
+        .msg { 
+            max-width: 85%; /* 화면의 85%까지 채울 수 있게 확장 */
+            padding: 16px 20px; 
+            border-radius: 12px; 
+            line-height: 1.7; /* 줄간격을 넓혀 가독성을 높였습니다. */
+            font-size: 1rem; 
+            white-space: pre-wrap; 
+            word-break: break-all;
+        }
+        /* 💡 AI 답변창이 너무 가로로 펑퍼짐해지지 않도록 가독성 마지노선(줄당 45자 내외) 폭 설정 */
+        .ai-msg { 
+            background: #ffffff; 
+            color: #333; 
+            align-self: flex-start; 
+            border-left: 5px solid #3498db;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            max-width: 75%; /* 큰 화면에서 한 눈에 읽기 가장 좋은 폭 */
+        }
+        .user-msg { background: #3498db; color: white; align-self: flex-end; }
+        
+        .input-area { display: flex; padding: 20px; background: #fff; border-top: 1px solid #ddd; gap: 12px; }
+        input[type="text"] { flex: 1; padding: 14px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; outline: none; }
+        button { padding: 14px 28px; border: none; background: #2c3e50; color: white; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; transition: background 0.2s; }
+        button:hover { background: #1a252f; }
     </style>
 </head>
 <body>
 
     <div class="chat-wrapper">
-        <div class="header">🔬 물질의 상태변화 AI 퀴즈 (총 3문제)</div>
+        <div class="header">📜 과학사 탐색 및 글쓰기 도우미</div>
         <div class="chat-box" id="chatBox"></div>
         <div class="input-area">
-          <input type="text" id="userReply" placeholder="답변을 입력하고 엔터를 누르세요..." onkeypress="if(event.keyCode==13) sendAnswer()">
+          <input type="text" id="userReply" placeholder="궁금한 과학사 주제를 입력하고 엔터를 누르세요..." onkeypress="if(event.keyCode==13) sendAnswer()">
           <button id="sendBtn" onclick="sendAnswer()">전송</button>
         </div>
     </div>
 
     <script>
-        // 🔗 내 Render 배포 주소 (끝에 슬래시 제외)
-        const BACKEND_URL = 'https://science-quiz-backend.onrender.com';
-
+        const BACKEND_URL = 'https://science-quiz-backend.onrender.com'; // 내 Render 주소 확인!
         let questionNumber = 0; 
         let currentQuizText = ""; 
 
         const chatBox = document.getElementById('chatBox');
         const inputField = document.getElementById('userReply');
-        const sendBtn = document.getElementById('sendBtn');
 
-        // 첫 페이지 로드 시 0번 상태로 첫 문제 요청
         window.onload = function() {
             fetchQuizData("", 0, "");
         };
@@ -59,13 +93,13 @@
 
         function sendAnswer() {
             const userAnswer = inputField.value.trim();
-            if (userAnswer === "" || questionNumber >= 3) return;
+            if (userAnswer === "") return;
 
             appendMessage(userAnswer, 'user-msg');
             inputField.value = ""; 
 
-            const loadingMsg = appendMessage("🤖 AI 선생님이 채점 중입니다...", 'ai-msg');
-            questionNumber++; // 문제 번호 증가 (1, 2, 3)
+            const loadingMsg = appendMessage("🤖 AI 선생님이 구글 검색으로 최신 자료를 수집 중입니다...", 'ai-msg');
+            questionNumber++; 
 
             fetchQuizData(userAnswer, questionNumber, currentQuizText, loadingMsg);
         }
@@ -81,28 +115,19 @@
                 })
             })
             .then(response => {
-                if (!response.ok) {
-                    throw new Error(`서버 에러 발생 (상태코드: ${response.status})`);
-                }
+                if (!response.ok) throw new Error(`서버 에러 (${response.status})`);
                 return response.json();
             })
             .then(data => {
                 if (loadingMsgElement) loadingMsgElement.remove();
-
                 const aiResponse = data.ai_response;
                 appendMessage(aiResponse, 'ai-msg');
                 currentQuizText = aiResponse;
-
-                if (qNum === 3) {
-                    appendMessage("🔒 3문제 퀴즈가 종료되었습니다. 수고하셨습니다!", 'system-end-msg');
-                    inputField.disabled = true;
-                    sendBtn.disabled = true;
-                }
             })
             .catch(error => {
                 console.error('Error:', error);
                 if (loadingMsgElement) {
-                    loadingMsgElement.innerHTML = `⚠️ 오류가 발생했습니다. 두 고리를 새로고침 해보세요. (사유: ${error.message})`;
+                    loadingMsgElement.innerHTML = `⚠️ 오류가 발생했습니다. 잠시 후 다시 시도해 주세요. (사유: {error.message})`;
                 }
             });
         }
