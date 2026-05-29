@@ -25,17 +25,15 @@
 
     <div class="chat-wrapper">
         <div class="header">🔬 물질의 상태변화 AI 퀴즈 (총 3문제)</div>
-        
         <div class="chat-box" id="chatBox"></div>
-
         <div class="input-area">
-          <input type="text" id="userReply" placeholder="답변을 입력하고 엔터나 전송을 누르세요..." onkeypress="if(event.keyCode==13) sendAnswer()">
+          <input type="text" id="userReply" placeholder="답변을 입력하고 엔터를 누르세요..." onkeypress="if(event.keyCode==13) sendAnswer()">
           <button id="sendBtn" onclick="sendAnswer()">전송</button>
         </div>
     </div>
 
     <script>
-        // ⭕ 주소 끝의 슬래시(/)를 제거하여 URL 가독성을 높였습니다.
+        // 🔗 내 Render 배포 주소 (끝에 슬래시 제외)
         const BACKEND_URL = 'https://science-quiz-backend.onrender.com';
 
         let questionNumber = 0; 
@@ -45,11 +43,12 @@
         const inputField = document.getElementById('userReply');
         const sendBtn = document.getElementById('sendBtn');
 
+        // 첫 페이지 로드 시 0번 상태로 첫 문제 요청
         window.onload = function() {
             fetchQuizData("", 0, "");
         };
 
-       function appendMessage(text, senderClass) {
+        function appendMessage(text, senderClass) {
             const msgDiv = document.createElement('div');
             msgDiv.className = `msg ${senderClass}`;
             msgDiv.innerHTML = text;
@@ -60,29 +59,33 @@
 
         function sendAnswer() {
             const userAnswer = inputField.value.trim();
-            if (userAnswer === "" || questionNumber > 3) return;
+            if (userAnswer === "" || questionNumber >= 3) return;
 
             appendMessage(userAnswer, 'user-msg');
             inputField.value = ""; 
 
-            const loadingMsg = appendMessage("🤖 AI 선생님이 채점 및 다음 문제를 생성하고 있습니다...", 'ai-msg');
-            questionNumber++;
+            const loadingMsg = appendMessage("🤖 AI 선생님이 채점 중입니다...", 'ai-msg');
+            questionNumber++; // 문제 번호 증가 (1, 2, 3)
 
             fetchQuizData(userAnswer, questionNumber, currentQuizText, loadingMsg);
         }
 
         function fetchQuizData(reply, qNum, cQuiz, loadingMsgElement = null) {
-            // ⭕ 주소 조립 라인 정상화 (/api/quiz)
             fetch(`${BACKEND_URL}/api/quiz`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    reply: reply,
-                    question_number: qNum,
-                    current_quiz: cQuiz
+                    reply: String(reply),
+                    question_number: Number(qNum),
+                    current_quiz: String(cQuiz)
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`서버 에러 발생 (상태코드: ${response.status})`);
+                }
+                return response.json();
+            })
             .then(data => {
                 if (loadingMsgElement) loadingMsgElement.remove();
 
@@ -91,14 +94,16 @@
                 currentQuizText = aiResponse;
 
                 if (qNum === 3) {
-                    appendMessage("🔒 3문제 퀴즈가 종료되었습니다. 더 이상 입력할 수 없습니다.", 'system-end-msg');
+                    appendMessage("🔒 3문제 퀴즈가 종료되었습니다. 수고하셨습니다!", 'system-end-msg');
                     inputField.disabled = true;
                     sendBtn.disabled = true;
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                if (loadingMsgElement) loadingMsgElement.innerHTML = "⚠️ 서버와 연결할 수 없습니다. 배포 주소나 파이썬 서버 상태를 확인하세요.";
+                if (loadingMsgElement) {
+                    loadingMsgElement.innerHTML = `⚠️ 오류가 발생했습니다. 두 고리를 새로고침 해보세요. (사유: ${error.message})`;
+                }
             });
         }
     </script>
