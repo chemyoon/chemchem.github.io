@@ -189,8 +189,6 @@
     const RAW_BACKEND_URL = "https://science-quiz-backend.onrender.com";
     const BACKEND_URL = RAW_BACKEND_URL.replace(/\/+$/, "");
     const API_URL      = BACKEND_URL + "/api/quiz";
-    const SESSION_URL  = BACKEND_URL + "/api/session";
-    const TOKEN_KEY    = "science_quiz_token";  // localStorage 키
 
     const TEMPLATES = {
       1: { prefix: "나는 과학 개념 및 기술 중에서", suffix: "의 개념 및 기술이 세부적으로 어떻게 분류되는지 알고 싶어" },
@@ -200,7 +198,6 @@
 
     let questionNumber = 0;
     let isSending      = false;
-    let sessionToken   = null;  // 세션 토큰
 
     const chatArea    = document.getElementById("chatArea");
     const templateBox = document.getElementById("templateBox");
@@ -227,25 +224,7 @@
       blankInput.focus();
     }
 
-    // 세션 토큰 초기화: localStorage에 있으면 재사용, 없으면 서버에서 발급
-    async function initSession() {
-      const stored = localStorage.getItem(TOKEN_KEY);
-      if (stored) {
-        sessionToken = stored;
-        return;
-      }
-      try {
-        const res  = await fetch(SESSION_URL);
-        const data = await res.json();
-        sessionToken = data.token;
-        localStorage.setItem(TOKEN_KEY, sessionToken);
-      } catch (e) {
-        console.warn("세션 발급 실패:", e);
-      }
-    }
-
-    window.addEventListener("DOMContentLoaded", async () => {
-      await initSession();
+    window.addEventListener("DOMContentLoaded", () => {
       addMessage(
         "반갑습니다! 과학사 탐색 및 글쓰기 수행평가 도우미 봇입니다. " +
         "아래 입력창의 빈칸을 채워 질문해 주세요! 🔍",
@@ -284,8 +263,7 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             current_quiz:    message,
-            question_number: sendingStage,
-            token:           sessionToken   // 세션 토큰 전송
+            question_number: sendingStage
           })
         });
 
