@@ -272,6 +272,16 @@
 
         addMessage(data.reply || "답변을 받지 못했어요. 다시 시도해 주세요!", "ai-msg");
 
+        // 답변 실패(서버 오류/빈 답변/HTTP 오류) — 단계 넘기지 않고 같은 질문 유지
+        if (!res.ok || data.ok === false) {
+          addMessage(
+            "위 질문에 대한 답을 아직 받지 못했어요. 같은 빈칸을 다시 채워 전송해 주세요! 🔁",
+            "system-msg"
+          );
+          setTemplate(sendingStage);
+          return;
+        }
+
         questionNumber = sendingStage;
 
         if (questionNumber === 1) {
